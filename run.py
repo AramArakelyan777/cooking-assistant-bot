@@ -15,11 +15,6 @@ async def handle_start(message: Message):
     logging.basicConfig(filename="logs/handlerlogs.log", level=logging.INFO)
 
 
-@dp.message(Command("home"))
-async def send_location(message: Message):
-    await bot.send_message(chat_id=message.from_user.id, text=f"Home.\nLongitude: {message.location.longitude}\nLatitude: {message.location.latitude}")
-
-
 async def main():
     logging.basicConfig(filename="logs/bot.log", level=logging.INFO)
     try:
