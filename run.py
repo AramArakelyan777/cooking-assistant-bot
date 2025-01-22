@@ -1,21 +1,15 @@
 import asyncio
 import logging
 from os import environ
-from aiogram import Bot, Dispatcher, F
-from aiogram.filters import Command
-from aiogram.types import Message
+from aiogram import Bot, Dispatcher
+from app.handlers import router
 
 bot = Bot(token=environ["TELEGRAM_BOT_TOKEN"])
 dp = Dispatcher()
 
 
-@dp.message(Command("start"))
-async def handle_start(message: Message):
-    await bot.send_message(chat_id=message.from_user.id, text="Welkommen!")
-    logging.basicConfig(filename="logs/handlerlogs.log", level=logging.INFO)
-
-
 async def main():
+    dp.include_router(router)
     logging.basicConfig(filename="logs/bot.log", level=logging.INFO)
     try:
         await dp.start_polling(bot)
