@@ -18,7 +18,7 @@ class LoggingMiddleware(BaseMiddleware):
         self.logger.setLevel(logging.DEBUG)
 
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "%(asctime)s [%(levelname)s] [%(filename)s] %(message)s"
         )
 
         log_dir = os.path.abspath("app/data/logs")

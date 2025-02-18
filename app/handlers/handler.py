@@ -12,5 +12,5 @@ logger = LoggingMiddleware()
 async def handle_start(message: Message):
     await message.answer(text="Hi, I am your Cooking Assistant!")
     logger.log(
-        level="info", message=f"Start command handled for user {message.from_user.id}"
+        level="info", message=f"Start command handled for user {message.from_user.id}."
     )

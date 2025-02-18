@@ -13,12 +13,9 @@ async def main():
     try:
         bot = Bot(token=config["TELEGRAM_BOT_TOKEN"])
         dp = Dispatcher()
-
         dp.update.middleware(logger)
-
         dp.include_router(router)
-        logger.log(level="info", message="Bot instance created and middleware applied.")
-
+        logger.log(level="info", message="Started the bot.")
         await dp.start_polling(bot)
 
     except KeyboardInterrupt:
