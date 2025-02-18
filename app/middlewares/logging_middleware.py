@@ -1,23 +1,36 @@
 import logging
+import os
 from aiogram import BaseMiddleware
 from aiogram.types import Update
 
 
 class LoggingMiddleware(BaseMiddleware):
-    def __init__(self):
-        super().__init__()
+    _instance = None
 
-        self.logger = logging.getLogger(__name__)
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._init_logger()
+        return cls._instance
+
+    def _init_logger(self):
+        self.logger = logging.getLogger("bot_logger")
         self.logger.setLevel(logging.DEBUG)
+
         formatter = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
 
-        self.debug_handler = logging.FileHandler("app/data/logs/debug.log")
+        log_dir = os.path.abspath("app/data/logs")
+        os.makedirs(log_dir, exist_ok=True)
+
+        self.debug_handler = logging.FileHandler(os.path.join(log_dir, "debug.log"))
         self.debug_handler.setLevel(logging.DEBUG)
-        self.info_handler = logging.FileHandler("app/data/logs/info.log")
+        self.debug_handler.addFilter(lambda record: record.levelno == logging.DEBUG)
+        self.info_handler = logging.FileHandler(os.path.join(log_dir, "info.log"))
         self.info_handler.setLevel(logging.INFO)
-        self.error_handler = logging.FileHandler("app/data/logs/error.log")
+        self.info_handler.addFilter(lambda record: record.levelno == logging.INFO)
+        self.error_handler = logging.FileHandler(os.path.join(log_dir, "error.log"))
         self.error_handler.setLevel(logging.ERROR)
 
         self.debug_handler.setFormatter(formatter)
