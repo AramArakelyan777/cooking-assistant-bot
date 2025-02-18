@@ -3,3 +3,4 @@ venv/
 *logs/
 .env
 app/watcher.py
+*__pycache__
