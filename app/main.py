@@ -10,6 +10,8 @@ logger = LoggingMiddleware()
 
 
 async def main():
+    """Entry point for the whole app, where the bot and the dispatcher are created and configured."""
+
     try:
         bot = Bot(token=config["TELEGRAM_BOT_TOKEN"])
         dp = Dispatcher()

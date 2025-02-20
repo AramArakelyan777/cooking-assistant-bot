@@ -12,6 +12,11 @@ logger = LoggingMiddleware()
 
 @router.message(Command("start"))
 async def handle_start(message: Message):
+    """Greets the user and logs data.
+    Args:
+        message (Message): The '/start' command message object sent by the user.
+    """
+
     await message.answer(
         text=f"Hi {message.from_user.first_name}, I am your Cooking Assistant!\nLet's start our delicious journey!"
     )
@@ -23,6 +28,11 @@ async def handle_start(message: Message):
 
 @router.message(Command("random"))
 async def handle_random(message: Message):
+    """Sends the fetched random recipe with a photo and description.
+    Args:
+        message (Message): The '/random' command message object sent by the user.
+    """
+
     random_recipe = await get_random_recipe()
 
     if random_recipe:

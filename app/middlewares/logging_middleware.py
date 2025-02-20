@@ -24,13 +24,18 @@ class LoggingMiddleware(BaseMiddleware):
         log_dir = os.path.abspath("app/data/logs")
         os.makedirs(log_dir, exist_ok=True)
 
-        self.debug_handler = logging.FileHandler(os.path.join(log_dir, "debug.log"))
+        self.debug_handler = logging.FileHandler(
+            os.path.join(log_dir, "debug.log"))
         self.debug_handler.setLevel(logging.DEBUG)
-        self.debug_handler.addFilter(lambda record: record.levelno == logging.DEBUG)
-        self.info_handler = logging.FileHandler(os.path.join(log_dir, "info.log"))
+        self.debug_handler.addFilter(
+            lambda record: record.levelno == logging.DEBUG)
+        self.info_handler = logging.FileHandler(
+            os.path.join(log_dir, "info.log"))
         self.info_handler.setLevel(logging.INFO)
-        self.info_handler.addFilter(lambda record: record.levelno == logging.INFO)
-        self.error_handler = logging.FileHandler(os.path.join(log_dir, "error.log"))
+        self.info_handler.addFilter(
+            lambda record: record.levelno == logging.INFO)
+        self.error_handler = logging.FileHandler(
+            os.path.join(log_dir, "error.log"))
         self.error_handler.setLevel(logging.ERROR)
 
         self.debug_handler.setFormatter(formatter)
@@ -47,11 +52,13 @@ class LoggingMiddleware(BaseMiddleware):
 
         try:
             return await handler(event, data)
+
         except Exception as e:
-            self.logger.error(f"Error while processing event: {e}", exc_info=True)
+            self.logger.error(
+                f"Error while processing event: {e}", exc_info=True)
             raise e
 
-    def log(self, level, message):
+    def log(self, level: str, message: str):
         """Utility function to log messages at different levels"""
 
         if level == "debug":
