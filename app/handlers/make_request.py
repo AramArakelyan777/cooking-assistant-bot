@@ -1,4 +1,4 @@
-import aiohttp
+from session_manager import session
 
 
 async def make_request(url: str, params: dict = {}) -> dict:
@@ -17,6 +17,5 @@ async def make_request(url: str, params: dict = {}) -> dict:
         aiohttp.ClientResponseError: If the response contains an HTTP error status.
     """
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, params=params) as res:
-            return await res.json()
+    async with session.get(url=url, params=params) as res:
+        return await res.json()
