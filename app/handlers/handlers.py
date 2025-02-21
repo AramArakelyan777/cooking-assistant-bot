@@ -42,6 +42,8 @@ async def handle_random(message: Message, state: FSMContext):
         reply_markup=ReplyKeyboardRemove()
     )
 
+    main_menu = Keyboards.main_menu_kb()
+
     random_recipe = await get_random_recipe()
 
     if random_recipe:
@@ -52,13 +54,13 @@ async def handle_random(message: Message, state: FSMContext):
         )
         await message.answer(
             text="Here it is, enjoy it!",
-            reply_markup=Keyboards.main_menu_kb()
+            reply_markup=main_menu
         )
         await logger.log(
             level="info", message=f"Got a random recipe for user {message.from_user.id}.")
 
     else:
-        await message.answer(text="I couldn't find a random recipe. Please try again later.")
+        await message.answer(text="I couldn't find a random recipe. Please try again later.", reply_markup=main_menu)
 
     await state.clear()
 
