@@ -1,4 +1,4 @@
-from session_manager import session
+from handlers.http.session_manager import session
 
 
 async def make_request(url: str, params: dict = {}) -> dict:
