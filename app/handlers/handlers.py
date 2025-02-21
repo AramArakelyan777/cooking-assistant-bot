@@ -3,14 +3,14 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from middlewares.logging_middleware import LoggingMiddleware
+from middlewares.logging_middleware import AsyncLoggingMiddleware
 from handlers.random_recipe import get_random_recipe
 from handlers.recipe_structure import Structurize
 from keyboards.keyboards import Keyboards
 
 
 router = Router()
-logger = LoggingMiddleware()
+logger = AsyncLoggingMiddleware()
 
 
 class RecipeStates(StatesGroup):
@@ -27,7 +27,7 @@ async def handle_start(message: Message, state: FSMContext):
         text=f"Hi {message.from_user.first_name}, I am your Cooking Assistant!\nLet's start our delicious journey!",
         reply_markup=Keyboards.main_menu_kb()
     )
-    logger.log(
+    await logger.log(
         level="info", message=f"Start command handled for user {message.from_user.id}.")
 
 
@@ -54,7 +54,7 @@ async def handle_random(message: Message, state: FSMContext):
             text="Here it is, enjoy it!",
             reply_markup=Keyboards.main_menu_kb()
         )
-        logger.log(
+        await logger.log(
             level="info", message=f"Got a random recipe for user {message.from_user.id}.")
 
     else:

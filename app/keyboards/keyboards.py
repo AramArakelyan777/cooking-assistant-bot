@@ -3,7 +3,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 class Keyboards:
     @staticmethod
-    def main_menu_kb():
+    def main_menu_kb() -> ReplyKeyboardMarkup:
         """Creates and returns the main menu keyboard.
         Returns:
             ReplyKeyboardMarkup: The reply keyboard to be returned.

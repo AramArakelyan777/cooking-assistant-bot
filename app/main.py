@@ -1,13 +1,13 @@
 import asyncio
 from dotenv import dotenv_values
 from aiogram import Bot, Dispatcher
-from middlewares.logging_middleware import LoggingMiddleware
+from middlewares.logging_middleware import AsyncLoggingMiddleware
 from handlers.handlers import router
-from handlers.session_manager import init_session, close_session
+from handlers.http.session_manager import init_session, close_session
 
 
 config = dotenv_values(".env")
-logger = LoggingMiddleware()
+logger = AsyncLoggingMiddleware()
 
 
 async def main():
@@ -15,19 +15,25 @@ async def main():
 
     try:
         await init_session()
-        bot = Bot(token=config["TELEGRAM_BOT_TOKEN"])
+
+        bot_token = config["TELEGRAM_BOT_TOKEN"]
+
+        if bot_token:
+            bot = Bot(token=bot_token)
+        else:
+            await logger.log(level="error", message="Unable to create the bot. The token is invalid.")
+
         dp = Dispatcher()
 
         dp.update.middleware(logger)
         dp.include_router(router)
 
-        logger.log(level="info", message="Started the bot.")
-
+        await logger.log(level="info", message="Started the bot.")
         await dp.start_polling(bot)
 
     except KeyboardInterrupt:
-        logger.log(level="error",
-                   message="The bot was stopped by a keyboard action.")
+        await logger.log(level="error",
+                         message="The bot was stopped by a keyboard action.")
 
     finally:
         await close_session()
