@@ -16,12 +16,13 @@ async def main():
     try:
         await init_session()
 
-        bot_token = config["TELEGRAM_BOT_TOKEN"]
+        bot_token = config.get("TELEGRAM_BOT_TOKEN")
 
         if bot_token:
             bot = Bot(token=bot_token)
         else:
             await logger.log(level="error", message="Unable to create the bot. The token is invalid.")
+            return
 
         dp = Dispatcher()
 
