@@ -2,6 +2,7 @@ from aiohttp import ClientError
 from dotenv import dotenv_values
 from handlers.http.make_request import make_request
 from middlewares.logging_middleware import AsyncLoggingMiddleware
+from handlers.http.session_manager import get_session
 
 
 config = dotenv_values(".env")
@@ -15,12 +16,17 @@ async def get_random_recipe() -> dict | None:
         recipe_api = config.get("RANDOM_RECIPE_API")
 
         if recipe_api:
-            random_recipe = await make_request(url=recipe_api)
+            session = get_session()
+            if session:
+                random_recipe = await make_request(session, url=recipe_api)
+            else:
+                await logger.log(level="error", message="Session is not initialized.")
+                return None
         else:
             await logger.log(level="error", message="The recipe API is invalid.")
             return None
 
-        if random_recipe and random_recipe.get("meals") and isinstance(random_recipe["meals"], list) and len(random_recipe["meals"]) > 0:
+        if random_recipe and random_recipe.get("meals"):
             return random_recipe["meals"][0]
         else:
             await logger.log(level="error",

@@ -3,6 +3,7 @@ from dotenv import dotenv_values
 from aiogram import Bot, Dispatcher
 from middlewares.logging_middleware import AsyncLoggingMiddleware
 from handlers.handlers import router
+from handlers.http.session_manager import init_session, close_session
 
 
 config = dotenv_values(".env")
@@ -13,6 +14,8 @@ async def main():
     """Entry point for the whole app, where the bot and the dispatcher are created and configured."""
 
     try:
+        await init_session()
+
         bot_token = config.get("TELEGRAM_BOT_TOKEN")
 
         if bot_token:
@@ -32,6 +35,9 @@ async def main():
     except KeyboardInterrupt:
         await logger.log(level="error",
                          message="The bot was stopped by a keyboard action.")
+
+    finally:
+        await close_session()
 
 
 if __name__ == "__main__":
