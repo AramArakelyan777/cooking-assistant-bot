@@ -1,4 +1,5 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
 class Keyboards:
@@ -9,4 +10,22 @@ class Keyboards:
             ReplyKeyboardMarkup: The reply keyboard to be returned.
         """
 
-        return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="Get a random recipe.")]], resize_keyboard=True)
+        return ReplyKeyboardMarkup(keyboard=[
+            [KeyboardButton(text="Get a random recipe"),
+             KeyboardButton(text="Search a recipe by name")]
+        ],
+            resize_keyboard=True
+        )
+
+    @staticmethod
+    async def name_search_kb(recipes):
+        if len(recipes) == 0 or not recipes:
+            return None
+
+        keyboard = InlineKeyboardBuilder()
+
+        for meal in recipes:
+            keyboard.add(InlineKeyboardButton(
+                text=meal.get("strMeal", "N/A"), callback_data=str(recipes.index(meal))))
+
+        return keyboard.adjust(1).as_markup()
