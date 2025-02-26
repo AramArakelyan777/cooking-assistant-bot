@@ -126,16 +126,22 @@ async def handle_recipe_callback_query(callback: CallbackQuery):
     await callback.answer(text="")
 
     if recipes_by_name:
-        recipe = recipes_by_name[int(callback.data)]
-        await callback.message.answer_photo(photo=recipe.get("strMealThumb", "default_image_url"))
-        await callback.message.answer(text=Structurize.structurized_recipe(recipe=recipe),
-                                      parse_mode="Markdown")
+        meal_id = callback.data
+        meal = next((m for m in recipes_by_name if str(
+            m["idMeal"]) == meal_id), None)
 
-        await logger.log(
-            level="info", message=f"Sent a meal's recipe after searching meals by name to user {callback.message.from_user.id}")
+        if meal:
+            await callback.message.answer_photo(photo=meal.get("strMealThumb", "default_image_url"))
+            await callback.message.answer(text=Structurize.structurized_recipe(meal), parse_mode="Markdown")
+
+            await logger.log(
+                level="info", message=f"Sent a meal's recipe to user {callback.message.from_user.id}")
+        else:
+            await callback.message.answer(text="Meal not found.")
+            await logger.log(level="error", message="Meal not found for callback.")
 
     else:
-        await logger.log(level="error", message="No meals found to show its recipe.")
+        await callback.message.answer(text="No meals found to show its recipe.")
 
 
 # unrecognized messages
