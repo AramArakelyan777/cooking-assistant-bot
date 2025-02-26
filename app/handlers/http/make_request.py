@@ -3,5 +3,5 @@ async def make_request(session, url: str, params=None) -> dict | None:
 
     params = params or {}
 
-    async with session.get(url, params=params) as res:
+    async with session.get(url, params=params, timeout=10) as res:
         return await res.json()

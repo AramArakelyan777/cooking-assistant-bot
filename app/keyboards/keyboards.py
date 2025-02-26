@@ -25,7 +25,7 @@ class Keyboards:
         keyboard = InlineKeyboardBuilder()
 
         for meal in recipes:
-            keyboard.add(InlineKeyboardButton(
-                text=meal.get("strMeal", "N/A"), callback_data=str(recipes.index(meal))))
+            keyboard.add(InlineKeyboardButton(text=meal.get(
+                "strMeal", "N/A"), callback_data=str(meal["idMeal"])))
 
         return keyboard.adjust(1).as_markup()

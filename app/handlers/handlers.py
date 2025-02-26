@@ -1,20 +1,21 @@
 from aiogram import Router, F
-from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
 from middlewares.logging_middleware import AsyncLoggingMiddleware
 from handlers.random_recipe import get_random_recipe
+from handlers.name_search import get_recipe_by_name
 from handlers.recipe_structure import Structurize
 from keyboards.keyboards import Keyboards
+from handlers.recipe_states import RecipeStates
 
 
 router = Router()
 logger = AsyncLoggingMiddleware()
+main_menu = Keyboards.main_menu_kb()
+recipes_by_name = None
 
-
-class RecipeStates(StatesGroup):
-    WAITING_FOR_RECIPE = State()
+# commands
 
 
 @router.message(Command("start"))
@@ -31,7 +32,7 @@ async def handle_start(message: Message, state: FSMContext):
         level="info", message=f"Start command handled for user {message.from_user.id}.")
 
 
-@router.message(F.text == "Get a random recipe.")
+@router.message(F.text == "Get a random recipe")
 async def handle_random(message: Message, state: FSMContext):
     """Sends a random recipe and prevents spamming."""
 
@@ -41,8 +42,6 @@ async def handle_random(message: Message, state: FSMContext):
         text="Alright, here is a random meal by my choice.",
         reply_markup=ReplyKeyboardRemove()
     )
-
-    main_menu = Keyboards.main_menu_kb()
 
     random_recipe = await get_random_recipe()
 
@@ -60,20 +59,90 @@ async def handle_random(message: Message, state: FSMContext):
             level="info", message=f"Got a random recipe for user {message.from_user.id}.")
 
     else:
-        await message.answer(text="I couldn't find a random recipe. Please try again later.", reply_markup=main_menu)
+        await message.answer(text="I couldn't find a random recipe.", reply_markup=main_menu)
 
     await state.clear()
 
 
-@router.message(StateFilter(RecipeStates.WAITING_FOR_RECIPE))
+@router.message(F.text == "Search a recipe by name")
+async def handle_name_search_first(message: Message, state: FSMContext):
+    """Sends the recipes searched by name and prevents spamming."""
+
+    await state.set_state(RecipeStates.SEARCH_BY_NAME)
+
+    await message.answer(
+        text="Alright, please enter the name of a meal that you want.",
+        reply_markup=ReplyKeyboardRemove()
+    )
+
+
+# state filtering
+
+
+@router.message(StateFilter(RecipeStates.SEARCH_BY_NAME))
+async def handle_name_search_second(message: Message, state: FSMContext):
+    if len(message.text) < 3:
+        await message.answer(text="The meal name you entered is too short.")
+        return
+
+    await state.update_data(recipe_name=message.text)
+
+    data = await state.get_data()
+
+    global recipes_by_name
+    recipes_by_name = await get_recipe_by_name(data["recipe_name"])
+
+    if recipes_by_name:
+        await message.answer(text="Here are the meals that I have found based on your input.",
+                             reply_markup=await Keyboards.name_search_kb(recipes=recipes_by_name))
+
+        await message.answer(
+            text="Click on the meal you want to view its recipe!",
+            reply_markup=main_menu
+        )
+        await logger.log(
+            level="info", message=f"Got meal names searched by name for user {message.from_user.id}.")
+
+    else:
+        await message.answer(text="I couldn't find any recipes.", reply_markup=main_menu)
+
+    await state.clear()
+
+
+@router.message(StateFilter(RecipeStates.WAITING_FOR_RECIPE, RecipeStates.SEARCH_BY_NAME))
 async def handle_unexpected_message(message: Message):
     """Prevents users from sending irrelevant messages during the process."""
 
-    await message.answer("Please wait while I'm preparing your recipe. This won't take long.")
+    await message.answer("Please wait while I'm preparing your recipe.")
+
+
+# callbacks
+
+
+@router.callback_query()
+async def handle_recipe_callback_query(callback: CallbackQuery):
+    """Handles a button click with the meal name to view its recipe."""
+
+    await callback.answer(text="")
+
+    if recipes_by_name:
+        recipe = recipes_by_name[int(callback.data)]
+        await callback.message.answer_photo(photo=recipe.get("strMealThumb", "default_image_url"))
+        await callback.message.answer(text=Structurize.structurized_recipe(recipe=recipe),
+                                      parse_mode="Markdown")
+
+        await logger.log(
+            level="info", message=f"Sent a meal's recipe after searching meals by name to user {callback.message.from_user.id}")
+
+    else:
+        await logger.log(level="error", message="No meals found to show its recipe.")
+
+
+# unrecognized messages
 
 
 @router.message()
 async def handle_unrecognized_message(message: Message):
     """Handles unrecognized commands or text."""
 
-    await message.answer("I'm not sure what you mean. Use the menu below to continue.")
+    await message.answer("I'm not sure what you mean.\nUse the menu or send the /help command.")

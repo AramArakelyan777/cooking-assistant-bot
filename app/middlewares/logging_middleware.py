@@ -64,3 +64,6 @@ class AsyncLoggingMiddleware(BaseMiddleware):
         """Formats the log message to include logging date, level and message."""
 
         return f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]} [{level}] {message}"
+
+
+logger = AsyncLoggingMiddleware()
