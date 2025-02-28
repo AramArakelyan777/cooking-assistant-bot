@@ -1,3 +1,4 @@
+from dotenv import dotenv_values
 from aiogram import Router, F
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.filters import Command, StateFilter
@@ -14,6 +15,7 @@ router = Router()
 logger = AsyncLoggingMiddleware()
 main_menu = Keyboards.main_menu_kb()
 recipes_by_name = None
+config = dotenv_values()
 
 # commands
 
@@ -46,7 +48,7 @@ async def handle_random(message: Message, state: FSMContext):
     random_recipe = await get_random_recipe()
 
     if random_recipe:
-        await message.answer_photo(photo=random_recipe.get("strMealThumb", "default_image_url"))
+        await message.answer_photo(photo=random_recipe.get("strMealThumb", config.get("DEFAULT_IMAGE_URL")))
         await message.answer(
             text=Structurize.structurized_recipe(random_recipe),
             parse_mode="Markdown"
@@ -82,7 +84,7 @@ async def handle_name_search_first(message: Message, state: FSMContext):
 @router.message(StateFilter(RecipeStates.SEARCH_BY_NAME))
 async def handle_name_search_second(message: Message, state: FSMContext):
     if len(message.text) < 3:
-        await message.answer(text="The meal name you entered is too short.")
+        await message.answer(text="The meal name you entered is too short.", reply_markup=main_menu)
         return
 
     await state.update_data(recipe_name=message.text)
@@ -131,7 +133,7 @@ async def handle_recipe_callback_query(callback: CallbackQuery):
             m["idMeal"]) == meal_id), None)
 
         if meal:
-            await callback.message.answer_photo(photo=meal.get("strMealThumb", "default_image_url"))
+            await callback.message.answer_photo(photo=meal.get("strMealThumb", config.get("DEFAULT_IMAGE_URL")))
             await callback.message.answer(text=Structurize.structurized_recipe(meal), parse_mode="Markdown")
 
             await logger.log(
@@ -151,4 +153,4 @@ async def handle_recipe_callback_query(callback: CallbackQuery):
 async def handle_unrecognized_message(message: Message):
     """Handles unrecognized commands or text."""
 
-    await message.answer("I'm not sure what you mean.\nUse the menu or send the /help command.")
+    await message.answer("I'm not sure what you mean.\nUse the menu or send the /help command.", reply_markup=main_menu)
