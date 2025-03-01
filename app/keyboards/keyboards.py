@@ -11,8 +11,8 @@ class Keyboards:
         """
 
         return ReplyKeyboardMarkup(keyboard=[
-            [KeyboardButton(text="Get a random recipe"),
-             KeyboardButton(text="Search a recipe by name")]
+            [KeyboardButton(text="Surprise me!"),
+             KeyboardButton(text="Search by name")]
         ],
             resize_keyboard=True
         )

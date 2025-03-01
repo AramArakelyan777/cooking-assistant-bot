@@ -34,7 +34,7 @@ async def handle_start(message: Message, state: FSMContext):
         level="info", message=f"Start command handled for user {message.from_user.id}.")
 
 
-@router.message(F.text == "Get a random recipe")
+@router.message(F.text == "Surprise me!")
 async def handle_random(message: Message, state: FSMContext):
     """Sends a random recipe and prevents spamming."""
 
@@ -66,7 +66,7 @@ async def handle_random(message: Message, state: FSMContext):
     await state.clear()
 
 
-@router.message(F.text == "Search a recipe by name")
+@router.message(F.text == "Search by name")
 async def handle_name_search_first(message: Message, state: FSMContext):
     """Sends the recipes searched by name and prevents spamming."""
 
